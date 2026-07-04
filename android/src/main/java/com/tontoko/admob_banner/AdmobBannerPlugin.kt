@@ -3,19 +3,24 @@ package com.tontoko.admob_banner
 import android.app.Activity
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.AdView
-import com.google.android.gms.ads.MobileAds
-import com.google.android.ump.ConsentDebugSettings
-import com.google.android.ump.ConsentInformation
-import com.google.android.ump.ConsentRequestParameters
-import com.google.android.ump.UserMessagingPlatform
-
+import app.tauri.annotation.Command
+import app.tauri.annotation.InvokeArg
 import app.tauri.annotation.TauriPlugin
 import app.tauri.plugin.Invoke
 import app.tauri.plugin.JSObject
 import app.tauri.plugin.Plugin
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdSize
+import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.MobileAds
+import com.google.android.ump.ConsentInformation
+import com.google.android.ump.ConsentRequestParameters
+import com.google.android.ump.UserMessagingPlatform
+
+@InvokeArg
+class ShowBannerArgs {
+    lateinit var adUnitId: String
+}
 
 @TauriPlugin
 class AdmobBannerPlugin(private val activity: Activity): Plugin(activity) {
@@ -25,11 +30,6 @@ class AdmobBannerPlugin(private val activity: Activity): Plugin(activity) {
 
     @Command
     fun initialize(invoke: Invoke) {
-        val canRequest = consentInformation?.canRequestAds() ?: true
-        invoke.resolve(JSObject().put("can_request_ads", canRequest))
-    }
-
-    fun runInitialize(testDeviceIds: List<String>, callback: (Boolean) -> Unit) {
         val params = ConsentRequestParameters.Builder()
             .setTagForUnderAgeOfConsent(false)
             .build()
@@ -43,14 +43,14 @@ class AdmobBannerPlugin(private val activity: Activity): Plugin(activity) {
             {
                 if (consentInfo.isConsentFormAvailable) {
                     UserMessagingPlatform.loadAndShowConsentFormIfRequired(activity) { _ ->
-                        callback(consentInfo.canRequestAds())
+                        invoke.resolve(JSObject().put("can_request_ads", consentInfo.canRequestAds()))
                     }
                 } else {
-                    callback(consentInfo.canRequestAds())
+                    invoke.resolve(JSObject().put("can_request_ads", consentInfo.canRequestAds()))
                 }
             },
             { _ ->
-                callback(consentInfo.canRequestAds())
+                invoke.resolve(JSObject().put("can_request_ads", consentInfo.canRequestAds()))
             }
         )
 
@@ -59,9 +59,13 @@ class AdmobBannerPlugin(private val activity: Activity): Plugin(activity) {
 
     @Command
     fun show_banner(invoke: Invoke) {
-        val adUnitId = invoke.getString("ad_unit_id") ?: ""
-        showBanner(adUnitId)
-        invoke.resolve()
+        try {
+            val args = invoke.parseArgs(ShowBannerArgs::class.java)
+            showBanner(args.adUnitId)
+            invoke.resolve()
+        } catch (e: Exception) {
+            invoke.reject("Failed to show banner: ${e.message}")
+        }
     }
 
     @Command
