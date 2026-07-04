@@ -1,0 +1,7 @@
+/target
+Cargo.lock
+*.apk
+*.aab
+android/.gradle/
+android/build/
+android/local.properties

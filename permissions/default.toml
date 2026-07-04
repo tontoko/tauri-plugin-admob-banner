@@ -1,0 +1,10 @@
+[default]
+description = "Default permissions for tauri-plugin-admob-banner"
+permissions = [
+    "allow-initialize",
+    "allow-show-banner",
+    "allow-hide-banner",
+    "allow-can-request-ads",
+    "allow-privacy-options-required",
+    "allow-show-privacy-options",
+]
