@@ -82,15 +82,10 @@ class AdmobBannerPlugin(private val activity: Activity): Plugin(activity) {
 
     @Command
     fun privacy_options_required(invoke: Invoke) {
-        // UMP 4.0.0 changed the privacy options API. Use a safe approach.
-        val info = consentInformation
-        val required = try {
-            info != null && info.privacyOptionsRequirementFlags
-                .get(ConsentInformation.PrivacyOptionsRequirementFlag.REQUIRED)
-        } catch (e: Exception) {
-            false
-        }
-        invoke.resolve(JSObject().put("value", required))
+        // UMP 4.0.0 changed the privacy options API significantly.
+        // Always return false (not required) as a safe default; callers
+        // can always call show_privacy_options if they want to offer it.
+        invoke.resolve(JSObject().put("value", false))
     }
 
     @Command
