@@ -38,7 +38,9 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 
 impl<R: Runtime> AdmobBanner<R> {
     pub fn initialize(&self) -> crate::Result<bool> {
-        let v: serde_json::Value = self.0.run_mobile_plugin("initialize", ())?;
+        let v = self
+            .0
+            .run_mobile_plugin::<serde_json::Value>("initialize", ())?;
         v.get("can_request_ads")
             .and_then(|b| b.as_bool())
             .ok_or_else(|| crate::Error::Admob("missing can_request_ads in response".into()))
@@ -46,31 +48,35 @@ impl<R: Runtime> AdmobBanner<R> {
 
     pub fn show_banner(&self, ad_unit_id: String) -> crate::Result<()> {
         let args = ShowBannerArgs { ad_unit_id };
-        self.0.run_mobile_plugin("show_banner", args)?;
+        self.0.run_mobile_plugin::<()>("show_banner", args)?;
         Ok(())
     }
 
     pub fn hide_banner(&self) -> crate::Result<()> {
-        self.0.run_mobile_plugin("hide_banner", ())?;
+        self.0.run_mobile_plugin::<()>("hide_banner", ())?;
         Ok(())
     }
 
     pub fn can_request_ads(&self) -> crate::Result<bool> {
-        let v: serde_json::Value = self.0.run_mobile_plugin("can_request_ads", ())?;
+        let v = self
+            .0
+            .run_mobile_plugin::<serde_json::Value>("can_request_ads", ())?;
         v.get("value")
             .and_then(|b| b.as_bool())
             .ok_or_else(|| crate::Error::Admob("missing value in response".into()))
     }
 
     pub fn privacy_options_required(&self) -> crate::Result<bool> {
-        let v: serde_json::Value = self.0.run_mobile_plugin("privacy_options_required", ())?;
+        let v = self
+            .0
+            .run_mobile_plugin::<serde_json::Value>("privacy_options_required", ())?;
         v.get("value")
             .and_then(|b| b.as_bool())
             .ok_or_else(|| crate::Error::Admob("missing value in response".into()))
     }
 
     pub fn show_privacy_options(&self) -> crate::Result<()> {
-        self.0.run_mobile_plugin("show_privacy_options", ())?;
+        self.0.run_mobile_plugin::<()>("show_privacy_options", ())?;
         Ok(())
     }
 }

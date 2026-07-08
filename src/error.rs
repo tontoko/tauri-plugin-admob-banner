@@ -16,6 +16,10 @@ pub enum Error {
 
     #[error(transparent)]
     Tauri(#[from] tauri::Error),
+
+    #[cfg(mobile)]
+    #[error("Plugin invoke error: {0}")]
+    PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),
 }
 
 /// Convenience type alias for plugin results.
