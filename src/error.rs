@@ -13,10 +13,15 @@ pub enum Error {
 
     #[error("UMP consent not yet obtained; call show_privacy_options first")]
     ConsentRequired,
+
+    #[error(transparent)]
+    Tauri(#[from] tauri::Error),
 }
 
+pub type Result<T> = std::result::Result<T, Error>;
+
 impl serde::Serialize for Error {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
     {

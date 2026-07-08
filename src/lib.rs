@@ -18,28 +18,30 @@
 //! ```
 
 mod error;
-#[cfg(target_os = "android")]
+#[cfg(mobile)]
 mod mobile;
 
 pub use error::Error;
 
-use tauri::{plugin::TauriPlugin, Runtime};
+#[cfg(mobile)]
+use mobile::AdmobBanner;
+
+use tauri::{plugin::TauriPlugin, Manager, Runtime};
 
 /// Initialize the Google Mobile Ads SDK and run the UMP consent flow.
 /// Returns `true` if ads can be requested after consent.
 #[tauri::command]
 #[allow(dead_code)]
 async fn initialize<R: Runtime>(
-    _app: tauri::AppHandle<R>,
+    app: tauri::AppHandle<R>,
     _test_device_ids: Option<Vec<String>>,
 ) -> Result<bool, Error> {
-    #[cfg(target_os = "android")]
+    #[cfg(mobile)]
     {
-        // On Android, the Kotlin plugin handles initialization + UMP.
-        // The command resolves with can_request_ads from the native side.
-        Ok(true)
+        let admob = app.state::<AdmobBanner<R>>();
+        admob.initialize()
     }
-    #[cfg(not(target_os = "android"))]
+    #[cfg(not(mobile))]
     {
         Err(Error::Unsupported)
     }
@@ -49,16 +51,17 @@ async fn initialize<R: Runtime>(
 #[tauri::command]
 #[allow(dead_code)]
 async fn show_banner<R: Runtime>(
-    _app: tauri::AppHandle<R>,
-    _ad_unit_id: String,
+    app: tauri::AppHandle<R>,
+    ad_unit_id: String,
 ) -> Result<(), Error> {
-    #[cfg(target_os = "android")]
+    #[cfg(mobile)]
     {
-        // The Kotlin plugin creates and shows the AdView.
-        Ok(())
+        let admob = app.state::<AdmobBanner<R>>();
+        admob.show_banner(ad_unit_id)
     }
-    #[cfg(not(target_os = "android"))]
+    #[cfg(not(mobile))]
     {
+        let _ = ad_unit_id;
         Err(Error::Unsupported)
     }
 }
@@ -66,12 +69,13 @@ async fn show_banner<R: Runtime>(
 /// Hide and destroy the banner ad.
 #[tauri::command]
 #[allow(dead_code)]
-async fn hide_banner<R: Runtime>(_app: tauri::AppHandle<R>) -> Result<(), Error> {
-    #[cfg(target_os = "android")]
+async fn hide_banner<R: Runtime>(app: tauri::AppHandle<R>) -> Result<(), Error> {
+    #[cfg(mobile)]
     {
-        Ok(())
+        let admob = app.state::<AdmobBanner<R>>();
+        admob.hide_banner()
     }
-    #[cfg(not(target_os = "android"))]
+    #[cfg(not(mobile))]
     {
         Err(Error::Unsupported)
     }
@@ -80,12 +84,13 @@ async fn hide_banner<R: Runtime>(_app: tauri::AppHandle<R>) -> Result<(), Error>
 /// Check whether consent has been obtained and ads can be requested.
 #[tauri::command]
 #[allow(dead_code)]
-async fn can_request_ads<R: Runtime>(_app: tauri::AppHandle<R>) -> Result<bool, Error> {
-    #[cfg(target_os = "android")]
+async fn can_request_ads<R: Runtime>(app: tauri::AppHandle<R>) -> Result<bool, Error> {
+    #[cfg(mobile)]
     {
-        Ok(true)
+        let admob = app.state::<AdmobBanner<R>>();
+        admob.can_request_ads()
     }
-    #[cfg(not(target_os = "android"))]
+    #[cfg(not(mobile))]
     {
         Err(Error::Unsupported)
     }
@@ -94,12 +99,15 @@ async fn can_request_ads<R: Runtime>(_app: tauri::AppHandle<R>) -> Result<bool, 
 /// Check if the privacy options form should be shown.
 #[tauri::command]
 #[allow(dead_code)]
-async fn privacy_options_required<R: Runtime>(_app: tauri::AppHandle<R>) -> Result<bool, Error> {
-    #[cfg(target_os = "android")]
+async fn privacy_options_required<R: Runtime>(
+    app: tauri::AppHandle<R>,
+) -> Result<bool, Error> {
+    #[cfg(mobile)]
     {
-        Ok(false)
+        let admob = app.state::<AdmobBanner<R>>();
+        admob.privacy_options_required()
     }
-    #[cfg(not(target_os = "android"))]
+    #[cfg(not(mobile))]
     {
         Err(Error::Unsupported)
     }
@@ -108,12 +116,13 @@ async fn privacy_options_required<R: Runtime>(_app: tauri::AppHandle<R>) -> Resu
 /// Show the privacy options form (UMP).
 #[tauri::command]
 #[allow(dead_code)]
-async fn show_privacy_options<R: Runtime>(_app: tauri::AppHandle<R>) -> Result<(), Error> {
-    #[cfg(target_os = "android")]
+async fn show_privacy_options<R: Runtime>(app: tauri::AppHandle<R>) -> Result<(), Error> {
+    #[cfg(mobile)]
     {
-        Ok(())
+        let admob = app.state::<AdmobBanner<R>>();
+        admob.show_privacy_options()
     }
-    #[cfg(not(target_os = "android"))]
+    #[cfg(not(mobile))]
     {
         Err(Error::Unsupported)
     }
@@ -130,7 +139,17 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             privacy_options_required,
             show_privacy_options,
         ])
-        .setup(|_app, _api| {
+        .setup(|app, api| {
+            #[cfg(mobile)]
+            {
+                let admob = mobile::init(app, api)?;
+                app.manage(admob);
+            }
+            #[cfg(not(mobile))]
+            {
+                let _ = app;
+                let _ = api;
+            }
             Ok(())
         })
         .build()
