@@ -18,6 +18,9 @@ pub enum Error {
     Tauri(#[from] tauri::Error),
 }
 
+/// Convenience type alias for plugin results.
+pub type Result<T> = std::result::Result<T, Error>;
+
 impl serde::Serialize for Error {
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where

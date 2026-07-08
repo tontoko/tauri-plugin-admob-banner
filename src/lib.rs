@@ -21,7 +21,7 @@ mod error;
 #[cfg(mobile)]
 mod mobile;
 
-pub use error::Error;
+pub use error::{Error, Result};
 
 #[cfg(mobile)]
 use mobile::AdmobBanner;
