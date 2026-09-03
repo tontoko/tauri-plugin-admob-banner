@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-admob-banner"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "A minimal Tauri 2 plugin for Android AdMob banner ads with UMP consent flow"
 license = "MIT"

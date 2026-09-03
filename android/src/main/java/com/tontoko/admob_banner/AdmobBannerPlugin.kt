@@ -3,6 +3,9 @@ package com.tontoko.admob_banner
 import android.app.Activity
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updateLayoutParams
 import app.tauri.annotation.Command
 import app.tauri.annotation.InvokeArg
 import app.tauri.annotation.TauriPlugin
@@ -114,9 +117,28 @@ class AdmobBannerPlugin(private val activity: Activity): Plugin(activity) {
         )
         params.gravity = android.view.Gravity.BOTTOM
 
+        // Keep the banner above the system navigation bar. On targetSdk 35+
+        // edge-to-edge is enforced and android:id/content spans the full
+        // screen, so a plain Gravity.BOTTOM overlay would sit behind the
+        // gesture/3-button bar. Pre-35 the inset arrives as 0 (the window is
+        // already inset), so this is a no-op there.
+        ViewCompat.setOnApplyWindowInsetsListener(view) { v, insets ->
+            val bars = insets.getInsets(
+                WindowInsetsCompat.Type.navigationBars() or
+                    WindowInsetsCompat.Type.displayCutout()
+            )
+            v.updateLayoutParams<FrameLayout.LayoutParams> { bottomMargin = bars.bottom }
+            insets
+        }
+
         val rootView = activity.findViewById<FrameLayout>(android.R.id.content)
         rootView.addView(view, params)
         adView = view
+
+        // Insets are dispatched on attach, but the banner may be added after
+        // the initial dispatch (consent flow completes asynchronously), so
+        // re-request explicitly.
+        ViewCompat.requestApplyInsets(view)
 
         view.loadAd(AdRequest.Builder().build())
     }
