@@ -127,7 +127,11 @@ class AdmobBannerPlugin(private val activity: Activity): Plugin(activity) {
                 WindowInsetsCompat.Type.navigationBars() or
                     WindowInsetsCompat.Type.displayCutout()
             )
-            v.updateLayoutParams<FrameLayout.LayoutParams> { bottomMargin = bars.bottom }
+            v.updateLayoutParams<FrameLayout.LayoutParams> {
+                leftMargin = bars.left
+                rightMargin = bars.right
+                bottomMargin = bars.bottom
+            }
             insets
         }
 
