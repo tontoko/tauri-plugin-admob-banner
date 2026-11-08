@@ -1,13 +1,13 @@
 # tauri-plugin-admob-banner
 
-A minimal **Tauri 2** plugin for **Android AdMob banner ads** with **UMP consent flow**.
+A minimal **Tauri 2** plugin for **Android and iOS AdMob banner ads** with **UMP consent flow**.
 
 ## Features
 
 - 🏷️ Banner ads (bottom placement)
 - 🔒 UMP (User Messaging Platform) GDPR consent flow
-- 📦 Google Mobile Ads SDK 25.4.0 / UMP SDK 4.0.0
-- 🤖 Android-only (desktop/iOS returns `Unsupported`)
+- 📦 Google Mobile Ads SDK 25.4.0 / UMP SDK 4.0.0 (Android), GMA 13.x / UMP 3.x (iOS)
+- 🤖🍎 Android & iOS (desktop returns `Unsupported`)
 
 ## Why?
 
@@ -46,6 +46,19 @@ Add your AdMob App ID to `AndroidManifest.xml`:
     android:name="com.google.android.gms.ads.APPLICATION_ID"
     android:value="ca-app-pub-XXXXXXXXXXXXXXXX~XXXXXXXXXX"/>
 ```
+
+### iOS Info.plist
+
+Add your AdMob App ID to the app's `Info.plist` (the Google Mobile Ads SDK
+refuses to start without it):
+
+```xml
+<key>GADApplicationIdentifier</key>
+<string>ca-app-pub-XXXXXXXXXXXXXXXX~XXXXXXXXXX</string>
+```
+
+This plugin never requests App Tracking Transparency authorization, so
+`NSUserTrackingUsageDescription` is not required by the plugin itself.
 
 ## Usage
 
