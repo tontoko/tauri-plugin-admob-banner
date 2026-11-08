@@ -1,12 +1,12 @@
 //! # tauri-plugin-admob-banner
 //!
-//! A minimal Tauri 2 plugin for Android AdMob banner ads with UMP consent flow.
+//! A minimal Tauri 2 plugin for Android and iOS AdMob banner ads with UMP consent flow.
 //!
 //! Features:
 //! - Banner ads (bottom placement)
 //! - UMP (User Messaging Platform) consent flow
-//! - Google Mobile Ads SDK 25.4.0 / UMP SDK 4.0.0
-//! - Android-only (desktop returns `Unsupported`)
+//! - Google Mobile Ads SDK 25.4.0 / UMP SDK 4.0.0 (Android), GMA 13.x / UMP 3.x (iOS)
+//! - Android / iOS (desktop returns `Unsupported`)
 //!
 //! ## Usage
 //!
