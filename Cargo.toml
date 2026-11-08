@@ -2,10 +2,10 @@
 name = "tauri-plugin-admob-banner"
 version = "0.1.1"
 edition = "2021"
-description = "A minimal Tauri 2 plugin for Android AdMob banner ads with UMP consent flow"
+description = "A minimal Tauri 2 plugin for Android and iOS AdMob banner ads with UMP consent flow"
 license = "MIT"
 repository = "https://github.com/tontoko/tauri-plugin-admob-banner"
-keywords = ["tauri", "admob", "banner", "android", "ump"]
+keywords = ["tauri", "admob", "banner", "android", "ios", "ump"]
 links = "tauri-plugin-admob-banner"
 
 [build-dependencies]
