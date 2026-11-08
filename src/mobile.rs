@@ -8,7 +8,11 @@ use tauri::{
 #[cfg(target_os = "android")]
 const PLUGIN_IDENTIFIER: &str = "com.tontoko.admob_banner";
 
-/// Android plugin handle — wraps the Kotlin `AdmobBannerPlugin`.
+#[cfg(target_os = "ios")]
+tauri::ios_plugin_binding!(init_plugin_admob_banner);
+
+/// Mobile plugin handle — wraps the native `AdmobBannerPlugin`
+/// (Kotlin on Android, Swift on iOS).
 pub struct AdmobBanner<R: Runtime>(pub PluginHandle<R>);
 
 /// Arguments for the `show_banner` Kotlin command.
@@ -19,7 +23,7 @@ struct ShowBannerArgs {
     ad_unit_id: String,
 }
 
-/// Initializes the Kotlin plugin class on Android.
+/// Initializes the native plugin class (Kotlin on Android, Swift on iOS).
 pub fn init<R: Runtime, C: DeserializeOwned>(
     _app: &AppHandle<R>,
     api: PluginApi<R, C>,
@@ -29,7 +33,12 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
         let handle = api.register_android_plugin(PLUGIN_IDENTIFIER, "AdmobBannerPlugin")?;
         Ok(AdmobBanner(handle))
     }
-    #[cfg(not(target_os = "android"))]
+    #[cfg(target_os = "ios")]
+    {
+        let handle = api.register_ios_plugin(init_plugin_admob_banner)?;
+        Ok(AdmobBanner(handle))
+    }
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
     {
         let _ = api;
         Err(crate::Error::Unsupported)
